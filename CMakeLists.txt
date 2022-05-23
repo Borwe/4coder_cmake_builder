@@ -12,8 +12,11 @@ if(SOURCE_FILE)
   message(STATUS "Source file is: ${SOURCE_FILE}")
 else()
   message(STATUS "Defaulting sourcefile to ./custom/4coder_default_bindings.cpp")
-  set(SOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/custom/4coder_default_bindings.cpp")
+  set(SOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../custom/4coder_default_bindings.cpp")
 endif()
+
+#set dir of custom dir
+set(CODE_HOME ${CMAKE_CURRENT_SOURCE_DIR}/../custom)
 
 #set to use debug if no build type passed
 if(NOT CMAKE_BUILD_TYPE)
@@ -33,7 +36,6 @@ if(UNIX)
     set(COMPILE_DEFINITIONS_SET -DOS_LINUX=1 -DOS_WINDOWS=0 -DOS_MAC=0)
   endif()
 
-  set(CODE_HOME ${CMAKE_CURRENT_SOURCE_DIR}/custom)
 
   add_custom_target(metadata
     COMMAND ${CMAKE_CXX_COMPILER} -I${CODE_HOME} ${COMPILE_FLAGS_SET} -DMETA_PASS  ${COMPILE_DEFINITIONS_SET} -std=c++11 ${SOURCE_FILE} -E -o 4coder_command_metadata.i
@@ -63,7 +65,7 @@ if(UNIX)
   add_dependencies(custom_4coder run_metadata_generator)
 
   add_custom_target(copy_custom_4coder ALL
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/libcustom_4coder.so ${CMAKE_SOURCE_DIR}/custom_4coder.so)
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/libcustom_4coder.so ${CMAKE_SOURCE_DIR}/../custom_4coder.so)
   add_dependencies(copy_custom_4coder custom_4coder)
 
   add_custom_target(cleanup-metadata ALL
@@ -74,8 +76,8 @@ else()
   message(STATUS "Detected Windows environment")
   set(COMPILE_FLAGS_SET "/W4 /wd4310 /wd4100 /wd4201 /wd4505 /wd4996 /wd4127 /wd4510 /wd4512 /wd4610 /wd4457 /WX /GR- /nologo /FC /D OS_WINDOWS=1 /D OS_LINUX=0 /D OS_MAC=0")
 
-  message(FATAL_ERROR "Windows part not yet implemented, sorry.")
+  message(FATAL_ERROR "Microsoft Windows part not yet implemented, sorry.")
 endif()
 
 add_custom_target(copy-compile-commands ALL
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/compile_commands.json)
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/../compile_commands.json)
