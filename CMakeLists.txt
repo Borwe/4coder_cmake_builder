@@ -64,8 +64,16 @@ if(UNIX)
   target_compile_options(custom_4coder PRIVATE ${COMPILE_FLAGS_SET})
   add_dependencies(custom_4coder run_metadata_generator)
 
+  #If this script was called from the main 4coder build
+  #use the following as output dir for the custom_4coder library
+  if(DEFINED MAIN_BUILD)
+    set(COPY_DIR_4_CUSTOM_4CODER ${CMAKE_BINARY_DIR}/custom_4coder.so)
+  else()
+    set(COPY_DIR_4_CUSTOM_4CODER ${CMAKE_SOURCE_DIR}/../custom_4coder.so)
+  endif()
+
   add_custom_target(copy_custom_4coder ALL
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/libcustom_4coder.so ${CMAKE_SOURCE_DIR}/../custom_4coder.so)
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/libcustom_4coder.so ${COPY_DIR_4_CUSTOM_4CODER})
   add_dependencies(copy_custom_4coder custom_4coder)
 
   add_custom_target(cleanup-metadata ALL
@@ -79,5 +87,7 @@ else()
   message(FATAL_ERROR "Microsoft Windows part not yet implemented, sorry.")
 endif()
 
-add_custom_target(copy-compile-commands ALL
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/../compile_commands.json)
+if(NOT DEFINED MAIN_BUILD)
+  add_custom_target(copy-compile-commands ALL
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/../compile_commands.json)
+endif()
