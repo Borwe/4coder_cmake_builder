@@ -82,11 +82,18 @@ if(UNIX)
 else()
 
   message(STATUS "Detected Windows environment")
-  set(COMPILE_FLAGS_SET /W4 /wd4310 /wd4100 /wd4201 /wd4505 /wd4996 /wd4127 /wd4510 /wd4512 /wd4610 /wd4457 /WX /GR- /nologo /FC /D OS_WINDOWS=1 /D OS_LINUX=0 /D OS_MAC=0)
+  set(COMPILE_FLAGS_SET /W4 /wd4310 /wd4100 /wd4201 /wd4505 /wd4996 /wd4127 /wd4510 /wd4512 /wd4610 /wd4457 /WX /GR- /nologo /FC)
   set(META_OPTS /P /Fi4coder_command_metadata.i /DMETA_PASS)
-  add_custom_target(metadata ALL
-    COMMAND ${CMAKE_CXX_COMPILER} -I${CODE_HOME} ${COMPILE_FLAGS_SET} ${META_OPTS} ${SOURCE_FILE})
-  #message(FATAL_ERROR "Microsoft Windows part not yet implemented, sorry.")
+  set(COMPILE_DEFINITIONS_SET /D OS_WINDOWS=1 /D OS_LINUX=0 /D OS_MAC=0)
+
+  add_custom_target(metadata
+    COMMAND ${CMAKE_CXX_COMPILER} -I${CODE_HOME} ${COMPILE_FLAGS_SET} ${COMPILE_DEFINITIONS_SET} ${META_OPTS} ${SOURCE_FILE})
+
+  add_executable(metadata_generator ${CODE_HOME}/4coder_metadata_generator.cpp)
+  target_include_directories(metadata_generator PRIVATE ${CODE_HOME})
+  target_compile_definitions(metadata_generator PRIVATE ${COMPILE_DEFINITIONS_SET})
+  target_compile_options(metadata_generator PRIVATE ${COMPILE_FLAGS_SET})
+  add_dependencies(metadata_generator metadata)
 endif()
 
 if(NOT DEFINED MAIN_BUILD)
