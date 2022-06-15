@@ -73,7 +73,7 @@ if(UNIX)
   endif()
 
   add_custom_target(copy_custom_4coder ALL
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/libcustom_4coder.so ${COPY_DIR_4_CUSTOM_4CODER})
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:custom_4coder> ${COPY_DIR_4_CUSTOM_4CODER})
   add_dependencies(copy_custom_4coder custom_4coder)
 
   add_custom_target(cleanup-metadata ALL
@@ -94,9 +94,37 @@ else()
   target_compile_definitions(metadata_generator PRIVATE ${COMPILE_DEFINITIONS_SET})
   target_compile_options(metadata_generator PRIVATE ${COMPILE_FLAGS_SET})
   add_dependencies(metadata_generator metadata)
+
+  add_custom_target(run_metadata_generator ALL
+    COMMAND metadata_generator -R ..\\custom .\\4coder_command_metadata.i)
+  add_dependencies(run_metadata_generator metadata_generator)
+
+  add_library(custom_4coder SHARED ${SOURCE_FILE})
+  target_include_directories(custom_4coder PRIVATE ${CODE_HOME})
+  target_compile_definitions(custom_4coder PRIVATE ${COMPILE_DEFINITIONS_SET})
+  target_compile_options(custom_4coder PRIVATE ${COMPILE_FLAGS_SET})
+  target_link_options(custom_4coder PRIVATE /EXPORT:get_version
+    /EXPORT:init_apis /INCREMENTAL:NO)
+  add_dependencies(custom_4coder run_metadata_generator)
+
+
+  #If this script was called from the main 4coder build
+  #use the following as output dir for the custom_4coder library
+  if(DEFINED MAIN_BUILD)
+    set(COPY_DIR_4_CUSTOM_4CODER ${CMAKE_BINARY_DIR}/custom_4coder.dll)
+  else()
+    set(COPY_DIR_4_CUSTOM_4CODER ${CMAKE_SOURCE_DIR}/../custom_4coder.dll)
+  endif()
+
+  add_custom_target(copy_custom_4coder ALL
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:custom_4coder> ${COPY_DIR_4_CUSTOM_4CODER})
+  add_dependencies(copy_custom_4coder custom_4coder)
 endif()
 
 if(NOT DEFINED MAIN_BUILD)
-  add_custom_target(copy-compile-commands ALL
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/../compile_commands.json)
+  if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json)
+    message(STATUS "Copying over to root compile_commands.json")
+    add_custom_target(copy-compile-commands ALL
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/../compile_commands.json)
+  endif()
 endif()
