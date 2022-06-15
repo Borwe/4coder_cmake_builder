@@ -18,6 +18,14 @@ Perform super builds of custom layer using cmake, making it less operating syste
    cmake -Bbuild ./4coder_cmake_builder
    ```
 
+   On Windows use the Ninja generator to create the compile_commands.json like
+
+   ```bash
+   cmake -GNinja -Bbuild ./4coder_cmake_builder
+   ```
+
+   
+
 3. Go into the build directory and build the project.
 
    ```bash
